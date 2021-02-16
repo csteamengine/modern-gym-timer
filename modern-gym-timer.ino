@@ -12,7 +12,7 @@ void setup() {
   Serial.println("Here");
   timer.begin();
 
-//  timer.printName();
+  timer.printName("MODERN HOBBYIST");
 }
 
 void loop() {

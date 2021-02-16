@@ -199,49 +199,28 @@ void GymTimer::drawTime(){
   matrix.print(1234);
   matrix.drawColon(true);
 }
-
-void GymTimer::printName(){
-  Serial.println("Printing Name:");
-  //Cycle the letters and print Modern Hobbyist
-  uint8_t modern_hobbyist[] = {
-    ASCII_CAPITAL_M,
-    ASCII_CAPITAL_O,
-    ASCII_CAPITAL_D,
-    ASCII_CAPITAL_E,
-    ASCII_CAPITAL_R,
-    ASCII_CAPITAL_N,
-    0b00000000,
-    ASCII_CAPITAL_H,
-    ASCII_CAPITAL_O,
-    ASCII_CAPITAL_B,
-    ASCII_CAPITAL_B,
-    ASCII_CAPITAL_Y,
-    ASCII_CAPITAL_I,
-    ASCII_CAPITAL_S,
-    ASCII_CAPITAL_T,
-  };
-  
-  for(int i = 0; i <= 19; i++){
+void GymTimer::printName(String name){
+  for(int i = 0; i <= name.length() + 3; i++){
     if(i > 14){
       matrix.writeDigitRaw(4, 0b00000000);
     }else{
-      matrix.writeDigitRaw(4, modern_hobbyist[i]);
+      matrix.writeDigitRaw(4,  get_ascii(name.charAt(i) - ' '));
     }
 
-    if(i-1 >= 0 && i-1 <= 14){
-      matrix.writeDigitRaw(3, modern_hobbyist[i-1]);
+    if(i-1 >= 0 && i-1 < name.length()){
+      matrix.writeDigitRaw(3,  get_ascii(name.charAt(i-1) - ' '));
     }else{
       matrix.writeDigitRaw(3, 0b00000000);
     }
 
-    if(i-2 >= 0 && i-2 <= 14){
-      matrix.writeDigitRaw(1, modern_hobbyist[i-2]);
+    if(i-2 >= 0 && i-2 < name.length()){
+      matrix.writeDigitRaw(1,  get_ascii(name.charAt(i-2) - ' '));
     }else{
       matrix.writeDigitRaw(1, 0b00000000);
     }
 
-    if(i-3 >= 0 && i-3 <= 14){
-      matrix.writeDigitRaw(0, modern_hobbyist[i-3]);
+    if(i-3 >= 0 && i-3 < name.length()){
+      matrix.writeDigitRaw(0, get_ascii(name.charAt(i-3) - ' '));
     }else{
       matrix.writeDigitRaw(0, 0b00000000);
     }
@@ -249,6 +228,5 @@ void GymTimer::printName(){
     matrix.writeDisplay();
     delay(250);
   }
-
   delay(1000);
 }

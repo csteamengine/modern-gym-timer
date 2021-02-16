@@ -62,7 +62,7 @@ class GymTimer{
     void begin();
     int getMode();
     char* getName();
-    void printName();
+    void printName(String name);
     void updateDisplay();
     void powerOff();
     void readPowerButton();
