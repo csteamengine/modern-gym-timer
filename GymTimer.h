@@ -3,6 +3,7 @@
 #include <Adafruit_GFX.h>
 #include "Adafruit_LEDBackpack.h"
 #include "ascii.h"
+#include <ezButton.h>
 
 #ifndef gymTimer
 #define gymTimer 
@@ -25,23 +26,18 @@ class GymTimer{
     int debounceDelay = 50;
     int longPressDelay = 3000;
 
-    int playPin;
-    int upPin;
-    int downPin;
-    int powerPin;
-    int modePin;
-    
-    int playButtonState = HIGH;
-    int upButtonState = HIGH;
-    int downButtonState = HIGH;
-    int powerButtonState = HIGH;
-    int modeButtonState = HIGH;
+    ezButton* powerButtonShort;
+    ezButton* powerButtonLong;
+    ezButton* playButtonShort;
+    ezButton* playButtonLong;
+    ezButton* upButtonShort;
+    ezButton* upButtonLong;
+    ezButton* downButtonShort;
+    ezButton* downButtonLong;
+    ezButton* modeButtonShort;
+    ezButton* modeButtonLong;
 
-    int lastPlayButtonState = HIGH;
-    int lastUpButtonState = HIGH;
-    int lastDownButtonState = HIGH;
-    int lastPowerButtonState = HIGH;
-    int lastModeButtonState = HIGH;
+    bool setting = false;
 
     bool playPress = false;
     bool upPress = false;
@@ -54,12 +50,13 @@ class GymTimer{
     bool downLongPress = false;
     bool powerLongPress = false;
     bool modeLongPress = false;
+
+    bool playRelease = false;
+    bool upRelease = false;
+    bool downRelease = false;
+    bool powerRelease = false;
+    bool modeRelease = false;
     
-    unsigned long lastPlayDebounce = 0;
-    unsigned long lastUpDebounce = 0;
-    unsigned long lastDownDebounce = 0;
-    unsigned long lastPowerDebounce = 0;
-    unsigned long lastModeDebounce = 0;
   public:
     GymTimer(int _playPin = 8, int _upPin = 7, int _downPin = 6, int _powerPin = 4, int _modePin = 2);
     void begin();
@@ -69,6 +66,10 @@ class GymTimer{
     void updateDisplay();
     void powerOff();
     void readPowerButton();
+    void readPlayButton();
+    void readUpButton();
+    void readDownButton();
+    void readModeButton();
     void drawTime();
     Adafruit_7segment getMatrix() { return matrix; };
 

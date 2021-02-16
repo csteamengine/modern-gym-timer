@@ -1,5 +1,6 @@
 #include "GymTimer.h"
 
+
 GymTimer timer = GymTimer();
 Adafruit_7segment matrix;
 
@@ -10,6 +11,7 @@ void setup() {
 #endif
   Serial.println("Here");
   timer.begin();
+
 //  timer.printName();
 }
 

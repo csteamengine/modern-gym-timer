@@ -1,21 +1,29 @@
 #include "GymTimer.h"
 
 GymTimer::GymTimer(int _playPin = 8, int _upPin = 7, int _downPin = 6, int _powerPin = 4, int _modePin = 2) {
-  
-  playPin = _playPin;
-  upPin = _upPin;
-  downPin = _downPin;
-  powerPin = _powerPin;
-  modePin = _modePin;
-
+  powerButtonShort = new ezButton(_powerPin);
+  powerButtonLong = new ezButton(_powerPin);
+  playButtonShort = new ezButton(_playPin);
+  playButtonLong = new ezButton(_playPin);
+  upButtonShort = new ezButton(_upPin);
+  upButtonLong = new ezButton(_upPin);
+  downButtonShort = new ezButton(_downPin);
+  downButtonLong = new ezButton(_downPin);
+  modeButtonShort = new ezButton(_modePin);
+  modeButtonLong = new ezButton(_modePin);
 } //default constructor
 
 void GymTimer::begin(){
-  pinMode(playPin, INPUT_PULLUP);
-  pinMode(upPin, INPUT_PULLUP);
-  pinMode(downPin, INPUT_PULLUP);
-  pinMode(powerPin, INPUT_PULLUP);
-  pinMode(modePin, INPUT_PULLUP);
+  powerButtonShort->setDebounceTime(50);
+  powerButtonLong->setDebounceTime(3000);
+  playButtonShort->setDebounceTime(50);
+  playButtonLong->setDebounceTime(3000);
+  upButtonShort->setDebounceTime(50);
+  upButtonLong->setDebounceTime(3000);
+  downButtonShort->setDebounceTime(50);
+  downButtonLong->setDebounceTime(3000);
+  modeButtonShort->setDebounceTime(50);
+  modeButtonLong->setDebounceTime(3000);
   //For some reason this can't be called in the constructor, so I created this begin function
   matrix = Adafruit_7segment();
   matrix.begin(0x70);
@@ -31,52 +39,154 @@ int GymTimer::getMode(){
 
 void GymTimer::updateDisplay(){
   readPowerButton();
-  
   if(poweredOn){
-    int playButtonReading = digitalRead(playPin);
-    int upButtonReading = digitalRead(upPin);
-    int downButtonReading = digitalRead(downPin);
-    int modeButtonReading = digitalRead(modePin);
+    if(setting){ //Going to use this so the display blinks while you are setting times -- do individual digits?
+      matrix.blinkRate(HT16K33_BLINK_1HZ);
+    }
+    readPlayButton();
+    readUpButton();
+    readDownButton();
+    readModeButton();
+    if(playPress){
+      Serial.println("Here1");
+    }else if(playRelease){
+      Serial.println("Here 2");
+    }
 
     if(mode == Clock){
       drawTime(); 
+      //Handle mode change
     }
     matrix.writeDisplay();
   }else{
-    Serial.println("Power Off");
     powerOff();
   }
 }
 
 void GymTimer::readPowerButton(){
-  int powerButtonReading = digitalRead(powerPin);
-  if (powerButtonReading != lastPowerButtonState) {
-    // reset the debouncing timer
-    lastPowerDebounce = millis();
+  //Detect if power button has been pressed down, and then released again for a short press
+  powerButtonShort->loop();
+  powerButtonLong->loop();
+  powerPress = false;
+  powerRelease = false;
+  powerLongPress = false;
+  
+  if(powerButtonShort->isPressed()){
+    powerPress = true;
+    Serial.println("Power -- Short");
+  }
+
+  if(powerButtonShort->isReleased()){
+    //Do quick press action 
+    powerRelease = true;
+    Serial.println("Power -- Release");
   }
   
-  if ((millis() - lastPowerDebounce) > debounceDelay) {
-    if (powerButtonReading != powerButtonState) {
-      powerButtonState = powerButtonReading;
-      
-      if (powerButtonState == LOW) {
-        Serial.println("Press power");
-        //Short press power button 
-      }
-    }
+  if(powerButtonLong->isPressed()){
+    poweredOn = !poweredOn; //Toggles the power, must wait 3s between power presses since that is the debounce time.
+    powerLongPress = true;
+    Serial.println("Power -- Long");
   }
-  //TODO get this working, currently the timer resets when it hits the debounce time. need both.
-  if ((millis() - lastPowerDebounce) > longPressDelay) {
-    if (powerButtonReading != powerButtonState) {
-      powerButtonState = powerButtonReading;
-      
-      if (powerButtonState == LOW) {
-        Serial.println("POWER OFF");
-        //Short press power button 
-      }
-    }
+}
+
+void GymTimer::readPlayButton(){
+  playButtonShort->loop();
+  playButtonLong->loop();
+  playPress = false;
+  playRelease = false;
+  playLongPress = false;
+  
+  if(playButtonShort->isPressed()){
+    playPress = true;
+    Serial.println("Play -- Short");
   }
-  lastPowerButtonState = powerButtonReading;
+
+  if(playButtonShort->isReleased()){
+    //Do quick press action 
+    playRelease = true;
+    Serial.println("Play -- Release");
+  }
+  
+  if(playButtonLong->isPressed()){
+    //Do long press action
+    playLongPress = true;
+    Serial.println("Play -- Long");
+  }
+}
+
+void GymTimer::readUpButton(){
+  upButtonShort->loop();
+  upButtonLong->loop();
+  upPress = false;
+  upRelease = false;
+  upLongPress = false;
+  
+  if(upButtonShort->isPressed()){
+    upPress = true;
+    Serial.println("Up -- Short");
+  }
+
+  if(upButtonShort->isReleased()){
+    //Do quick press action 
+    upRelease = true;
+    Serial.println("Up -- Release");
+  }
+  
+  if(upButtonLong->isPressed()){
+    //Do long press action
+    upLongPress = true;
+    Serial.println("Up -- Long");
+  }
+}
+
+void GymTimer::readDownButton(){
+  downButtonShort->loop();
+  downButtonLong->loop();
+  downPress = false;
+  downRelease = false;
+  downLongPress = false;
+  
+  if(downButtonShort->isPressed()){
+    downPress = true;
+    Serial.println("Down -- Short");
+  }
+
+  if(downButtonShort->isReleased()){
+    //Do quick press action 
+    downRelease = true;
+    Serial.println("Down -- Release");
+  }
+  
+  if(downButtonLong->isPressed()){
+    //Do long press action
+    downLongPress = true;
+    Serial.println("Down -- Long");
+  }
+}
+
+void GymTimer::readModeButton(){
+  modeButtonShort->loop();
+  modeButtonLong->loop();
+  modePress = false;
+  modeRelease = false;
+  modeLongPress = false;
+  
+  if(modeButtonShort->isPressed()){
+    modePress = true;
+    Serial.println("Mode -- Short");
+  }
+
+  if(modeButtonShort->isReleased()){
+    //Do quick press action 
+    modeRelease = true;
+    Serial.println("Mode -- Release");
+  }
+  
+  if(modeButtonLong->isPressed()){
+    //Do long press action
+    modeLongPress = true;
+    Serial.println("Mode -- Long");
+  }
 }
 
 void GymTimer::powerOff(){
