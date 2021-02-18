@@ -33,10 +33,6 @@ void GymTimer::begin(){
   mode = Clock; //Default to clock mode
 }
 
-int GymTimer::getMode(){
-  return mode;
-}
-
 void GymTimer::updateDisplay(){
   readPowerButton();
   if(poweredOn){
@@ -47,20 +43,70 @@ void GymTimer::updateDisplay(){
     readUpButton();
     readDownButton();
     readModeButton();
+    
     if(playPress){
       Serial.println("Here1");
     }else if(playRelease){
       Serial.println("Here 2");
     }
 
-    if(mode == Clock){
-      drawTime(); 
-      //Handle mode change
+    if(modePress){
+      nextMode();
+    }else if(modeLongPress){
+      Serial.println("Mode Long Pressed");
+    }else if(modeRelease){
+      //TODO anything that needs done on mode button release
     }
+
+    switch(mode){
+      case Mode::Up:
+        matrix.blinkRate(HT16K33_BLINK_1HZ);
+        matrix.writeDigitRaw(0, get_ascii('U'));
+        matrix.writeDigitRaw(1, get_ascii('P'));
+        break;
+      case Mode::UpRnd:
+        matrix.blinkRate(HT16K33_BLINK_1HZ);
+        matrix.writeDigitRaw(0, get_ascii('U'));
+        matrix.writeDigitRaw(1, get_ascii('R'));
+        break;
+      case Mode::Down:
+        matrix.blinkRate(HT16K33_BLINK_1HZ);
+        matrix.writeDigitRaw(0, get_ascii('D'));
+        matrix.writeDigitRaw(1, get_ascii('N'));
+        break;
+      case Mode::DownRnd:
+        matrix.blinkRate(HT16K33_BLINK_1HZ);
+        matrix.writeDigitRaw(0, get_ascii('D'));
+        matrix.writeDigitRaw(1, get_ascii('R'));
+        break;
+      case Mode::Interval:
+        matrix.blinkRate(HT16K33_BLINK_1HZ);
+        matrix.writeDigitRaw(0, get_ascii('I'));
+        matrix.writeDigitRaw(1, get_ascii('N'));
+        break;
+      case Mode::Clock:
+        matrix.blinkRate(HT16K33_BLINK_OFF);
+        drawTime(); 
+        break;
+    }
+    
     matrix.writeDisplay();
   }else{
     powerOff();
   }
+}
+
+void GymTimer::nextMode(){
+  if(mode == Mode::Clock){
+    mode = Mode::Up;
+  }else{
+    mode = mode + 1;
+  }
+  
+}
+
+Mode GymTimer::getMode(){
+  return mode;
 }
 
 void GymTimer::readPowerButton(){
@@ -73,19 +119,16 @@ void GymTimer::readPowerButton(){
   
   if(powerButtonShort->isPressed()){
     powerPress = true;
-    Serial.println("Power -- Short");
   }
 
   if(powerButtonShort->isReleased()){
     //Do quick press action 
     powerRelease = true;
-    Serial.println("Power -- Release");
   }
   
   if(powerButtonLong->isPressed()){
     poweredOn = !poweredOn; //Toggles the power, must wait 3s between power presses since that is the debounce time.
     powerLongPress = true;
-    Serial.println("Power -- Long");
   }
 }
 
@@ -98,19 +141,16 @@ void GymTimer::readPlayButton(){
   
   if(playButtonShort->isPressed()){
     playPress = true;
-    Serial.println("Play -- Short");
   }
 
   if(playButtonShort->isReleased()){
     //Do quick press action 
     playRelease = true;
-    Serial.println("Play -- Release");
   }
   
   if(playButtonLong->isPressed()){
     //Do long press action
     playLongPress = true;
-    Serial.println("Play -- Long");
   }
 }
 
@@ -123,19 +163,16 @@ void GymTimer::readUpButton(){
   
   if(upButtonShort->isPressed()){
     upPress = true;
-    Serial.println("Up -- Short");
   }
 
   if(upButtonShort->isReleased()){
     //Do quick press action 
     upRelease = true;
-    Serial.println("Up -- Release");
   }
   
   if(upButtonLong->isPressed()){
     //Do long press action
     upLongPress = true;
-    Serial.println("Up -- Long");
   }
 }
 
@@ -148,19 +185,16 @@ void GymTimer::readDownButton(){
   
   if(downButtonShort->isPressed()){
     downPress = true;
-    Serial.println("Down -- Short");
   }
 
   if(downButtonShort->isReleased()){
     //Do quick press action 
     downRelease = true;
-    Serial.println("Down -- Release");
   }
   
   if(downButtonLong->isPressed()){
     //Do long press action
     downLongPress = true;
-    Serial.println("Down -- Long");
   }
 }
 
@@ -173,19 +207,16 @@ void GymTimer::readModeButton(){
   
   if(modeButtonShort->isPressed()){
     modePress = true;
-    Serial.println("Mode -- Short");
   }
 
   if(modeButtonShort->isReleased()){
     //Do quick press action 
     modeRelease = true;
-    Serial.println("Mode -- Release");
   }
   
   if(modeButtonLong->isPressed()){
     //Do long press action
     modeLongPress = true;
-    Serial.println("Mode -- Long");
   }
 }
 

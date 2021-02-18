@@ -19,6 +19,9 @@ enum Mode : int{
 class GymTimer{
   private:
     bool poweredOn = true;
+    bool modeSelect = false;
+    bool timeSelect = false;
+    bool roundSelect = false;
     unsigned long lastRefreshTime = millis(); 
     char* name;
     Mode mode;
@@ -60,7 +63,8 @@ class GymTimer{
   public:
     GymTimer(int _playPin = 8, int _upPin = 7, int _downPin = 6, int _powerPin = 4, int _modePin = 2);
     void begin();
-    int getMode();
+    Mode getMode();
+    void nextMode();
     char* getName();
     void printName(String name);
     void updateDisplay();
